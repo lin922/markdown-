@@ -1,3 +1,7 @@
+java语言概述、基本语法、数组
+
+#### 4、面向对象（上）
+
 java变量类型：基本数据类型：
 
 数值型：byte short long float double 字符型：char 布尔型:   boolean
@@ -26,7 +30,7 @@ java变量类型：基本数据类型：
 
 方法：成员函数
 
-##### 4.3对象的创建与使用：内存解析
+##### 4.3 对象的创建与使用：内存解析
 
 堆区：存放对象实例 new
 
@@ -99,6 +103,8 @@ public可以任意访问 default只能在同一个包内部的类访问
 一般情况省略this；特殊情况当类的属性和方法的形参同名，用this.属性表示是该类的属性，而非形参
 
 构造器内调用另一个构造器 this(形参)，不能调用自己，或者避免调用成环，陷入循环。
+
+#### 5、面向对象（中）
 
 ##### 5.1 继承
 
@@ -274,13 +280,15 @@ Object类中toString()的使用：
 
 封装类 
 
-![1651216961713](C:\Users\lenovo\AppData\Roaming\Typora\typora-user-images\1651216961713.png)
+![image-20220506212221176](C:\Typora\mylearning\img\image-20220506212221176.png)
 
  包装类的使用：
 
 1、Java提供了8中数据类型对应的包装类，使得基本数据类型的变量具有类的特征
 
 2、  **重点**：基本类型、包装类与String类三者间的转换
+
+![image-20220506212248151](C:\Typora\mylearning\img\image-20220506212248151.png)
 
 ```java
 //基本数据类型---->包装类：调用包装类的构造器
@@ -315,6 +323,8 @@ Integer.parseInt(str1);
 ```
 
 重点：自动拆箱装箱 valueOf()   parsexxx()方法
+
+#### 6、面向对象（下）
 
 ##### 6.1 关键字static
 
@@ -535,6 +545,82 @@ final class A{
 
 抽象类就是一种模板模式的设计，抽象类作为子类的通用模板，子类在抽象类的基础上进行扩展改造，但子类总体保留抽象类的行为模式。
 
+6、抽象类应用：
+
+```java
+public abstract class Vehicle{
+	public abstract double calcFuelfficiency(); //计算燃料效率的抽象方法
+	public abstract double calc TripDistance(); //计算 行驶距离的抽象方法
+}
+public class Truck extends Vehicle{
+	public double calcFuelEficiency() { //写出计算卡车的燃料效率的具体方法}
+	public double calcTripDistance() { //写出计算卡车行驶距离的具体方法}
+}
+public class RiverBarge extends Vehicle{
+	public double calcFuelfficiency( ){ /写出计算驳船的燃料效率的具体方法}
+	public double calc TripDistance() { //写出计算驳船行驶距离的具体方法}
+```
+
+抽象类练习：
+
+编写一个Employee类，声明为抽象类，包含如下三个属性: name, id, salary。
+
+提供必要的构造器和抽象方法: work()。
+
+对于Manager类来说，他既是员工，还具有奖金(bonus )的属性。
+
+请使用继承的思想，设计CommonEmployee类和Manager类，要求类中提供必要的方法进行属性访问。
+
+```java
+//Employee类
+public abstract class Employee {
+    private String name;
+    private int id;
+    private double salary;
+    public Employee() {
+        super();
+    }
+    public Employee(String name, int id, double salary) {
+        super();
+        this.name = name;
+        this.id = id;
+        this.salary = salary;
+    }
+    public abstract void work() { };
+}
+//Manager类
+public class Manager extends Employee {
+    private double bonus;
+    public Manager(double bonus) {
+        super();
+        this.bonus = bonus;
+    }
+    public Manager(String name, int id, double salary, double bonus) {
+        super(name, id, salary);
+        this.bonus = bonus;
+    }
+    //子类重写
+    public void work() { 
+    	System.out.println("管理员工");
+    };
+}
+//CommonEmployee类
+public class CommonEmployee extends Employee {
+    public void work() { 
+    	System.out.println("员工生产");
+    };
+}
+public class Test{
+    public static void main(String[] args) {
+      //也可以用多态 Employee manager =
+      Manager manager = new Manager("爆",01,5000,50000); 
+      manager.work();
+    }
+    CommonEmployee cm = new CommonEmployee();
+    cm.work();
+}
+```
+
 ##### 6.6 接口（interface）
 
 利用接口实现多重继承（子类继承多个父类）
@@ -565,7 +651,11 @@ class AA extends BB implements CC,DD,EE;
 
 6、接口的应用：
 
-​	代理模式  为其他对象提供一种代理以控制对这个对象的访问。
+![image-20220507114949941](C:\Typora\mylearning\img\image-20220507114949941.png)
+
+​	![image-20220507115040978](C:\Typora\mylearning\img\image-20220507115040978-1651916100686.png)
+
+代理模式  为其他对象提供一种代理以控制对这个对象的访问。
 
 ​	工厂模式：实现创建者与调用者的分离，即将创建对象的具体过程被屏蔽隔离起来，达到提高灵活性的目的。
 
@@ -573,7 +663,76 @@ class AA extends BB implements CC,DD,EE;
 
 7、Java8关于接口的新规范
 
-##### 6.7类的成员之五：内部类
+8、体会：接口使用也满足多态性；接口实际上就是定义了一种规范，开发中体会面向接口编程。
+
+9、接口练习：
+
+![image-20220507103536769](C:\Typora\mylearning\img\image-20220507103536769-1651890954593-1651916104480.png)
+
+```java
+//CompareObject接口
+public interface CompareObject {
+    public int compareTo(Object o);
+    //0相等；正表示当前大
+}
+//Circle类
+public class Circle {
+    private double redius;
+    public Circle() {
+        super();
+    }
+    public Circle(double redius) {
+        super();
+        this.redius = redius;
+    }
+    public double getter(double redius) {
+        return redius;
+    }
+    public void setter(double redius) {
+        this.redius = redius;
+    }
+}
+//ComparableCircle类
+public class ComparableCircle extends Circle implements CompareObject {
+    public ComparableCircle (double redius) {
+        super(redius);
+    }
+    public int compareTo(Object o) {
+        if(this == o) {
+            return 0;
+        }
+        if(o instanceof ComparableCircle) {
+            ComparableCircle c = ComparableCircle(o);
+           if (this.getter() > c.getter()) return 1;
+           else if (this.getter() < c.getter()) return -1;
+           else return 0;
+        }
+        else {
+            return 0;
+            throw new RuntimeException("传入数据类型不匹配");
+        }
+    }
+}
+//Test类
+public class Test {
+    ComparableCircle c1 = new ComparableCircle(3.4);
+    ComparableCircle c2 = new ComparableCircle(4.6);
+    int CompareValue = c1.compareTo(c2);
+    if(CompareValue > 0) sout...
+}
+```
+
+10、接口和抽象类的异同？
+
+相同点：不能实例化，都可以包含抽象方法
+
+不同的：
+
+①接口（JDK7 JDK8）和抽象类的定义
+
+② 单继承  多继承
+
+##### 6.7 类的成员之五：内部类
 
 事物的内部，某个部分需要一个完整的结构进行描述，这个结构又只为外部事物提供服务，最好使用内部类。
 
@@ -582,6 +741,8 @@ inner class在外部引用时必须给出完整的名称。
 分类： 成员内部类（static和非static）
 
 ​			局部内部类（方法内、块内、构造器内）
+
+#### 7、异常处理
 
 ##### 7.1 异常概述与异常体系结构
 
@@ -601,7 +762,13 @@ inner class在外部引用时必须给出完整的名称。
 
 过程一：抛 程序执行时，一旦出现异常就在异常代码出生成一个对应异常类的对象，并将此对象抛出。抛出后后面的代码不再执行。
 
-过程二：抓 两种处理机制
+关于异常对象的产生：
+
+①系统自动生成的异常对象
+
+②手动的生成一个异常对象，并抛出(throw)
+
+过程二：抓 两种处理机制 (try-catch-finally   throws)
 
 ```java
 //try-catch-finally
@@ -615,26 +782,283 @@ try{
 ...
 finally{
     //一定会执行的代码
+    //像数据库连接、输入输出流、网络编程socket等，JVM是不能制动回收的，这时候需要手动释放，此时资源的释放就要被声明在finally中。
 }
-//像数据库连接、输入输出流、网络编程socket等，JVM是不能制动回收的，这时候需要手动释放，此时资源的释放就要被声明在finally中。
-//显示异常
-printStackTrace()
+//常用的异常对象的处理的方式：
+1、String getMessage()  2、printStackTrace()
 ```
 
+如何看待编译时异常和运行时异常？
 
+*体会1:使用try-catch- finally处理编译时异常，是得程序在编译时就不再报错，但是运行时仍可能报错。
+相当于 我们使用try-catch-finally将-个编译时可能出现的异常，延迟到运行时出现。
+*体会2:开发中，由于运行时异常比较常见，所以我们通常就不针对运行时异常编写try- catch- finally了.
+针对于编译时异常，我们说一定要考虑异常的处理。
 
 ##### 7.4 异常处理机制二：throws
 
-:dog
+1、throws+异常类型 写在方法的声明处，指明此方法执行时，可能会抛出的异常类型。
+
+一旦方法体执行时出现异常，仍会在异常代码处生成一个异常类的对象，此对象满足throws后异常类型时，就会被抛出。异常代码后续的代码就不会再被执行。
+
+public void method2() throws IOException }{
+
+​	method1();
+
+}
+
+2、try-catch-finally和throws的区别?
+
+​	try-catch-finally真正将异常给处理掉了；throws的方式只是将异常抛给了方法的调用者，并没有真正将异常处理掉。
+
+3、如何选择try-catch-finally还是throws?
+
+​	父类被重写的方法没有用throws，子类重写的方法也不能用throws，意味着子类有异常，必须/try-catch-finally。
+
+4、方法重写的规则之一：子类重写的方法抛出的异常类型不大于父类被重写的方法抛出的异常类型。
 
 ##### 7.5 手动抛出异常：throw
 
- 
+ 抛：关于异常对象的产生：
+
+①系统自动生成的异常对象
+
+②手动的生成一个异常对象，并抛出throw
 
 ##### 7.6 用户自定义异常类
 
+throw和throws 区别？
+	throw表示抛出-一个异常类的对象，生成异常对象的过程。声明在方法体内； throws属于异常处理的一种方式，声明在方法的声明处
+
+练习：
+
+![image-20220506211000945](C:\Typora\mylearning\img\image-20220506211000945-1651843849277.png)
+
+根据下面的例子理解：
+
+1、常见的异常类型
+
+2、异常的处理：try-catch   throws
+
+3、手动抛出异常对象
+
+4、自定义异常类
+
+![image-20220506211151909](C:\Typora\mylearning\img\image-20220506211151909-1651843845555.png)
+
+```java
+public class EcmDef {
+    public static void main(String[] args) {
+        try {
+         	int i = Integer.parseInt(args[0]);
+        	int j = Integer.parseInt(args[1]);
+        	int result = ecm(i, j);
+        	System.out.println(result);   
+        }catch(NumberFormatException e) {
+            System.out.println("数据类型不一致！"); 
+        }catch(ArrayIndexOutOfBoundsException e) {
+            System.out.println("缺少命令行参数！"); 
+        }catch(ArithmeticException e) {
+            System.out.println("除0！"); 
+        }catch(EcDef e) {
+            System.out.println(e.getMessage()); 
+        }
+    }
+    public static int ecm(int i, int j) throws EcDef{
+        if(i < 0 || j < 0) {
+            throw new EcDef("分子或分母为负数了！");
+        }
+        return i / j;
+    }
+}
+//异常类
+public class EcDef extends Exception {
+    static final long serialVersionUID = -33875164229948L;
+    public EcDef(){}
+    public EcDef(String msg) {
+        super(msg);
+    }
+}
+```
+
+总结：
+
+![image-20220506213402875](C:\Typora\mylearning\img\image-20220506213402875-1651844055371.png)
+
+#### 8、多线程
+
+##### 8.1 基本概念：程序、进程、线程
+
+- 程序(program)：为完成特定任务、用某种语言编写的一组指令的集合。即指一段静态的代码，静态对象。
+
+- 进程(process)：程序的一次执行过程， 或是正在运行的一个程序。是一个动态的过程:有它自身的产生、存在和消亡的过程。----生命周期
+  ➢如:运行中的QQ，运行中的MP3播放器
+  ➢程序是静态的，进程是动态的
+  ➢进程作为资源分配的单位，系统在运行时会为每个进程分配不同的内存区域
+
+- 线程(thread)：进程可进一步细化为线程，是一个程序内部的一条执行路径。
+  ➢若一个进程同一时间并行执行多个线程，就是支持多线程的
+  ➢线程作为调度和执行的单位，每个线程拥有独立的运行栈和程序计数器(pc)，线程切换的开销小
+  ➢一个进程中的多个线程共享相同的内存单元/内存地址空间>它们从同一堆中分配对象，可以访问相同的变量和对象。这就使得线程间通信更简便、高效。但多个线程操作共享的系统资
+  源可能就会带来安全的隐患。
+
+- 单核CPU和多核CPU：
+
+  一个java.exe,至少有三个线程：main（）主线程、gc（）垃圾回收线程、异常处理线程。
+
+- 并行与并发
+
+  ➢并行：多个CPU执行多个任务
+
+  ➢并发：一个CPU（利用时间片）同时执行多任务
+
+##### 8.2 线程的创建和使用*
+
+- 多线程通过Java.lang.Thread类实现
+
+​	Thread类特性：
+
+​		通过Thread对象的run()方法完成操作，run()方法主体叫做线程体
+
+​		通过Thread类对象的start()方法启动线程，而非直接调用run()
+
+- 多线程的创建：方式一：继承于Thread类
+
+  1、创建一个继承于Thread类的子类
+
+  2、重写Thread类的run()，将此线程执行的操作声明在run()中。
+
+  3、创建Thread类子类的对象
+
+  4、通过此对象调用start()
+
+  start()方法作用：启动线程；调用当前线程的run()方法
+
+```java
+class MyThread exteds Thread {
+    public void run() {
+        //具体操作：输出0-100偶数
+    }
+}
+class Test {
+    public static void main(String[] args) {
+        MyThread m = new MyThread();
+    	c.start();
+    	//具体操作：输出0-100奇数（main线程）
+    }
+}
+//main是主线程，start调用run是分进程，两个进程同时进行。
+```
+
+如何创建两个分线程？创建两个Thread子类，或者使用创建Thread类的匿名子类的方式。
+
+```java
+new Thread() {
+	//重写run()方法
+	public void run(){
+		//...
+	}
+}.start();
+```
+
+- Thread中的常用方法
+
+  1. start():启动当前线程: 调用当前线程的run()
+  2. run(): 通常需要重写Thread类中的此方法，将创建的线程要执行的操作声明在此方法中
+  3. currentThread(): 静态方法，返回执行当成代码的线程
+  4. getName():获取当前线程的名字
+  5. setName():设置当前线程的名字
+  6. yield():释放CPU当前的执行
+  7. join():在线程a中调用线程b的join(),此时线程a就进入阻塞状态，直到线程b完全执行完以后，线程a才结束阻塞状态。
+  8. stop():已过时，强制结束当前线程
+  9. sleep(long millitime):让当前线程睡眠指定时间，在指定时间内线程是阻塞状态。
+  10. isAlive():判断线程是否存活
+
+- 线程的调度
+
+  ![image-20220507195346105](C:\Typora\mylearning\img\image-20220507195346105-1651924439988.png)
+
+  ![image-20220507195821355](C:\Typora\mylearning\img\image-20220507195821355-1651924710663.png)
+
+- 多线程的创建：方式二：实现Runnable类
+  1. 创建一个实现了Runnable接口的类
+  2. 实现类 去实现Runnable中的抽象方法：run()
+  3. 创建实现类的对象
+  4. 将此对象作为参数传递到Thread类的构造器中，创建Thread类的对象
+  5. 通过Thread类的对象调用start()
+
+```java
+class MThread implements Runnable{
+   //重写
+    public void run() {
+        //具体操作
+    }
+}
+public class ThreadTest1{
+    public static void main(String[] args) {
+        MThread mThread = new MThread();
+        Thread t1 = new Thread(mThread);
+        t1.start();
+    }
+}
+```
+
+- 比较创建线程的两种方式
+
+  优先选择方式二Runnable接口
+
+  原因1.实现的方式没有类的单继承性的局限性
+
+  ​		2.实现的方式更适合处理多个线程有共享数据的情况。
+
+  相同点：都要重写run()
 
 
-​    
 
-  
+
+
+##### 8.3 线程的生命周期
+
+
+
+##### 8.4 线程的同步*
+
+
+
+##### 8.5 线程的通信
+
+
+
+
+
+
+
+
+
+##### 8.6 JDK5新增线程创建方式
+
+
+
+#### 9、Java常用类
+
+
+
+#### 10、枚举类&注解
+
+
+
+#### 11、Java集合
+
+
+
+#### 12、泛型
+
+#### 13、IO流
+
+#### 14、网络编程
+
+#### 15、Java反射机制
+
+#### 16、Java8其他新特性
+
+#### 17、Java9&10&11新特性
