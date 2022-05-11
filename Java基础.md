@@ -950,7 +950,7 @@ class Test {
 //main是主线程，start调用run是分进程，两个进程同时进行。
 ```
 
-如何创建两个分线程？创建两个Thread子类，或者使用创建Thread类的匿名子类的方式。
+如何创建两个分线程？创建两个Thread子类对象，或者使用创建Thread类的匿名子类的方式。
 
 ```java
 new Thread() {
@@ -1013,43 +1013,648 @@ public class ThreadTest1{
 
   相同点：都要重写run()
 
-
-
-
-
 ##### 8.3 线程的生命周期
 
-
+![image-20220509165323266](C:\Typora\mylearning\img\image-20220509165323266-1652086416189.png)
 
 ##### 8.4 线程的同步*
 
+当存在共享数据时，多个线程会发生线程的安全问题：重复 、出错。
 
+Java中通过同步机制来解决线程的安全问题。
+
+```java
+//方式一：同步代码块
+synchronized(同步监视器){
+    //需要被同步的代码
+}
+//说明：1、操作共享数据的代码，即为需要被同步的代码
+	 //2、共享数据：多个线程共同操作的变量。
+	 //3、同步监视器，俗称：锁。任何一个类的对象，都可以充当锁。要求：多个线程必须共用一把锁。
+
+//方式二：同步方法:方法声明时加synchronized
+1、同步方法仍然涉及到同步监视器，只是不需要显式的声明
+2、非静态的同步方法 同步监视器是this
+   静态的同步方法 同步监视器是当前类本身
+```
+
+同步的方式，解决了线程安全问题。操作同步代码时，只能有一个线程参与，其他线程等待。相当于是一个单线程的过程，效率低。
+
+- 使用同步机制将单例模式中懒汉式改为线程安全的
+
+```java
+//同步代码块 方法一效率稍差
+class Bank{ 
+    private Bank(){}
+    private static Bank instance = null;
+    public static Bank getInatance(){
+        synchronized(Bank.class){
+         	if(Instance == null) {
+            	instance = new Bank();
+        	}
+        	return instance;   
+        }
+    }
+}
+//二：比一好
+class Bank{ 
+    private Bank(){}
+    private static Bank instance = null;
+    public static Bank getInatance(){
+        if(Instance == null) {
+			synchronized(Bank.class){
+         		if(Instance == null) {
+            		instance = new Bank();
+        		}
+    	}
+    	return instance;   
+	}
+}
+//同步方法
+class Bank{
+    private Bank(){}
+    private static Bank instance = null;
+    public static synchronized Bank getInatance(){
+        if(Instance == null) {
+            instance = new Bank();
+        }
+        return instance;
+    }
+}
+```
+
+- 线程的死锁问题
+
+不同线程分别占用对方需要的同步资源不放弃，都在等待对方放弃，就形成了线程的死锁。
+
+出现死锁后，不会有异常和提示，只是所有线程都处于阻塞状态，无法继续。
+
+解决办法：
+
+​	专门的算法 原则
+
+​	尽量减少同步资源的定义
+
+​	尽量避免嵌套同步
+
+- 解决线程安全的方式三：Lock(锁)
+
+  Java5.0提供更强大的线程同步机制--通过显示定义同步锁对象来实现同步。同步锁用Lock对象充当。
+
+  Lock是接口
+
+  ```java
+  class Window implements Runnable{
+      private int ticket = 100;
+      //1、实例化一个Lock
+      private ReentrantLock lock = new ReentrantLock();
+     //override
+      public void run() {
+      	while(true) {
+              try{
+                  //2、调用lock()
+                  lock.lock();
+                  if(ticket > 0) {
+                  	try{
+                      	Thread.sleep(100);
+                  	}catch(InterruptedException e{
+                      	e.printStackTrace();
+                  	}
+                  	System.out.println(Thread.currentThread().getName() + ":" + number);
+                      ticket--;
+              	}else{
+                  	break;
+              	}
+              }finally{
+                  //3、调用解锁方法
+                  lock.unlock();
+              }
+          }
+      }
+  }
+  public class ThreadTest1{
+      public static void main(String[] args) {
+          MThread mThread = new MThread();
+          Thread t1 = new Thread(mThread);
+          t1.start();
+      }
+  }
+  ```
+
+- 总结：synchronized和lock的异同？
+
+  相同：都可以解决线程安全
+
+  不同：synchronize机制在执行完相应的同步代码以后，自动释放同步监视器
+
+  ​			lock需要手动解锁
 
 ##### 8.5 线程的通信
 
+线程通信涉及的三个方法：
 
+wait()方法：当前线程进入阻塞，并释放同步监视器
 
+notify()方法:唤醒被wait的一个线程。如果多个线程被wait，唤醒优先级高的
 
+notifyAll()方法:唤醒被wait的多个线程
 
+三种方法必须使用在同步代码块或同步方法中
 
+三种方法的调用者必须是同步代码块或同步方法的同步监视器
 
+sleep()和wait()的异同？
 
+1、相同的：一旦执行方法，都会使线程进入阻塞
+
+2、不同点：1）声明位置不同，sleep在Thread类，wait在Object类
+
+​					 2）调用要求不同，sleep在任何场景，wait有限制
+
+​                     3）都用在同步代码块或同步方法中，sleep不会释放锁，wait可以。
+
+- 经典例题：生产者消费者问题
+
+![image-20220510094900634](C:\Typora\mylearning\img\image-20220510094900634-1652147349906.png)
+
+```java
+//441
+```
 
 ##### 8.6 JDK5新增线程创建方式
 
+- 新增方式一：实现Callable接口
 
+![image-20220509215608069](C:\Typora\mylearning\img\image-20220509215608069-1652104575231-1652104694345.png)
+
+```java
+//1、创建一个实现Callable的实现类
+class NumThread implements Callable{
+    //2、实现call方法，将此线程需要执行的操作声明在call
+    public Object call() throws Exception{
+        //具体实现
+    }
+}
+public class ThreadNew{
+    public static void main(String[] args) {
+        //3、创建Callable接口实现类的对象
+        NumThread numThread = new NumThread();
+        //4、将此Callable接口实现类的对象传递到FutureTask构造器，创建FutureTask对象
+        FutureTask ft = new FutureTask(numThread);
+        //5、将FutureTask对象传递到Thread类的构造器中，创建Thread对象，调用start
+        new Thread(ft).start();
+        try {
+         //6、获取Callable中call方法的返回值
+		//get() 返回值即为FutureTask构造器参数Callable实现类重写的call()的返回值。
+				Object sum = futureTask. get();
+				System.out.print1n("总和为:”+sum);
+			} catch (InterruptedException e) {
+				e. printStackTrace();
+			} catch (ExecutionException e) {
+				e. printStackTrace();
+		}
+    }
+}
+```
+
+如何理解实现方式Callable比Runnable强大？
+
+1、Callable可以有返回值
+
+2、call可以抛出异常，被外面的操作捕获，获取异常的信息
+
+3、支持泛型
+
+- 新增方式二：使用线程池
+
+![image-20220510102424426](C:\Typora\mylearning\img\image-20220510102424426-1652149556996.png)
+
+![image-20220510103231803](C:\Typora\mylearning\img\image-20220510103231803-1652149965478.png)
 
 #### 9、Java常用类
 
+##### 9.1 字符串相关的类
 
+- String类及常用方法
+
+  - String类特性：
+
+    1. final类，不可变的字符序列。常量，创建后不可修改
+
+       1）对字符串重新赋值，需要重新指定内存区域赋值，不能使用原有的value
+
+       2）对现有字符串进行连接操作时，也需要重新指定内存区域赋值。
+
+       3）string.replace()方法时，也要重新分配内存
+
+    2. 通过字面量的方式（区别new）给一个字符串赋值，此时的字符串值声明在字符串常量池中。
+
+    3. String对象的字符内容是存储在一个字符数组value[]中
+
+    4. 实现了Serializable接口，表示字符串支持序列化；实现了compareable接口，表示可以比较大小
+
+  ![image-20220510113234447](C:\Typora\mylearning\img\image-20220510113234447-1652153563235.png)
+
+  - String实例化的两种方式：
+
+    1. 字面量常量定义的方式String s1 = "abc"
+
+       数据声明在方法区的字符串常量池中
+
+    2. new+构造器创建对象 String s2 = new String(”abc“);数据在堆空间中开辟空间以后对应的地址值
+    3. String s2 = new String(”abc“);内存中创建了几个对象？2个。一个是堆空间的new结构，一个是char[]对应常量池中数据，（若已经存在可以直接用）
+
+![image-20220510113723508](C:\Typora\mylearning\img\image-20220510113723508-1652153870989.png)
+
+![image-20220510113443341](C:\Typora\mylearning\img\image-20220510113443341-1652153697178.png)
+
+- String不同拼接方式
+
+  只要有变量参与拼接，结果就在堆中。
+
+  拼接的结果使用intern()方法，则结果在常量池中。
+
+  ![image-20220510114318241](C:\Typora\mylearning\img\image-20220510114318241.png)
+
+- 一道面试题：
+   string的不可变性
+
+  ![image-20220510114949373](C:\Typora\mylearning\img\image-20220510114949373-1652154594956.png)
+
+- String常用方法
+
+  ![image-20220510153455480](C:\Typora\mylearning\img\image-20220510153455480-1652168204983.png)
+
+  ![image-20220510153611439](C:\Typora\mylearning\img\image-20220510153611439-1652168204006.png)
+
+  ![image-20220510153639731](C:\Typora\mylearning\img\image-20220510153639731-1652168215928.png)
+
+- String与基本数据类型包装类的转换
+
+  ```java
+  String str1 = "123";
+  int num = Integer.parseInt(str1);
+  String str2 = String.valueof(num);
+  ```
+
+- String与字符数组char[]转换
+
+  ```java
+  //String--->char[]:调用toCharArray()方法
+  String str1 = "123";
+  char[] charArray = str1.toCharArray():
+  //char[]--->String:调用String的构造器
+  char[] arr = new char[]{'h','e','l','l','o'};
+  String str2 = new String(charArray);
+  ```
+
+- String与字节数组byte[]的转换
+
+  ```java
+  //编码String--->byte[]:调用getBytes()方法
+  String str1 = "123";
+  //默认字符集编码
+  byte[] bytes = str1.getBytes();
+  //gbk字符集编码
+  byte[] gbks = str1.getBytes(”gbk");
+  //解码byte[]--->String:调用String的构造器
+  //解码要用对应字符集
+  String str2 = new String(bytes);
+  String str3 = new String(gbks, "gbk");
+  ```
+
+- StringBuffer 
+
+  可变的字符串，线程安全，效率低 底层char[]
+
+- StringBuilder
+
+  可变的字符串，线程不安全，效率高 底层char[]
+
+  扩容问题：要添加的数据底层数组装不下，就需要扩容。默认情况下扩容为原来容量的2倍+2，同时原有数组的元素复制到新的数组中。
+
+  开发中建议使用StringBuffer的带参构造器，一开始就设定好容量。
+
+  ![image-20220510165208785](C:\Typora\mylearning\img\image-20220510165208785-1652172742096.png)
+
+##### 9.2 JDK8之前的日期时间API
+
+- system静态方法
+
+  1. java.lang.System类提供currentTimeMillis()用来返回当前时间与1970.1.1之间以毫秒为单位的时间差，称为时间戳
+
+  2. java.util.Date类
+
+     毫秒级时间
+
+     构造器：Date()  Date(long date)
+
+     常用方法：getTime() 显示时间戳toString()显示年月日时分秒
+
+     java.sql.Date类对应数据库中的date类型
+
+  3.   java.util.Date类对象转化为java.sql.Date类对象
+
+     ```java
+     Date date6 = new Date();
+     java.sql.Date date7 = new java.sql.Date(date6.getTime());
+     ```
+
+  4. Java.text.SimpleDateFormat类
+
+  5. Java.util.Calendar类
+
+     ![image-20220511100848265](C:\Typora\mylearning\img\image-20220511100848265-1652234974197.png)
+
+##### 9.3 JDK8中新日期时间API
+
+- LocalDate、LocalTime、LocalDateTime
+- 瞬时：instant
+
+##### 9.4 Java比较器
+
+正常情况下比较等于和不等于，开发场景中需要比较大小，需要下面的两个接口
+
+- comparable接口 自然排序
+
+  String、包装类等实现了Comparable接口，重写了compareTo()方法，给出了比较两个对象大小的规则。
+
+  自定义类要实现排序也需要这样做。
+
+- comparator接口 定制排序
+
+  重写了compare()方法
+
+  ![image-20220511105629505](C:\Typora\mylearning\img\image-20220511105629505-1652238000586.png)
+
+##### 9.5 System类
+
+![image-20220511105957371](C:\Typora\mylearning\img\image-20220511105957371.png)
+
+##### 9.6 Math类
+
+##### 9.7 BigInteger与BigDecimal
+
+![image-20220511110151742](C:\Typora\mylearning\img\image-20220511110151742.png)
+
+![image-20220511110208142](C:\Typora\mylearning\img\image-20220511110208142.png)
 
 #### 10、枚举类&注解
 
+##### 10.1 枚举类的使用
 
+枚举类：类的对象是有限个、确定的。比如星期、性别、季节
+
+当需要定义一组常量时，强烈建议枚举类。
+
+只有一个对象可以用单例模式
+
+- 如何自定义枚举类
+
+  ```java
+  class Season{
+      //1、声明类对象的属性
+      private final String seasonName;
+      //2、私有化类的构造器
+      private Season(String seasonName) {
+          this.seasonName = seasonName;
+      }
+      //3、提供当前枚举类的多个对象
+      public static final Season SPRING = new Season("春天");
+      夏秋冬...        
+  }
+  ```
+
+- 如何使用关键字enum定义枚举类
+
+  ```java
+  class enum Season{
+      //1、提供当前枚举类的多个对象
+     SPRING("春天")，
+     SUMMER("夏天")，
+     ...,
+     ...;
+      //2、声明类对象的属性
+      private final String seasonName;
+      //3、私有化类的构造器
+      private Season(String seasonName) {
+          this.seasonName = seasonName;
+      }     
+  }
+  ```
+
+- Enum类的主要方法
+
+  ![image-20220511112720668](C:\Typora\mylearning\img\image-20220511112720668.png)
+
+- 实现接口的枚举类
+
+  方式一：实现接口，在enum类中实现抽象方法
+
+  方式二：让枚举类的对象分别实现接口中的抽象方法
+
+##### 10.2 注解的使用Annotation
+
+- 注解概述
+
+  对元数据的支持
+
+  代码里的特殊标记，可以被编译，读取
+
+  框架=注解+反射+设计模式
+
+- 常见的Annotation示例
+
+  在前面加@
+
+  示例一：生成文档相关的注解
+
+  @author @version @see @since
+
+  示例二：编译时进行格式检查
+
+  @Override重写父类方法
+
+  @Deprecated 修饰的元素已过时
+
+  @SuppressWarnings 抑制编译器警告
+
+  示例三：跟踪代码依赖性，实现替代配置文件功能
+
+- 自定义Annotation
+
+  ①注解声明为@interface
+
+  ②内部定义成员，通常用value表示
+
+  ③可以指定默认值 default
+
+  ④自定义注解没有成员，表明是标识作用。
+
+  ```java
+  public @interface MyAnnotation {
+      String value() default "hello";
+      //指定了成员的默认值
+  }
+  //使用时
+  @MyAnnotation
+  ```
+
+  如果注解有成员，使用时要指明成员的值。
+
+  自定义注解必须配上注解的信息处理流程（使用反射）才有意义。
+
+- JDK中的4种元注解
+
+  元注解：用于修饰其他注解定义，对现有注解进行解释说明的注解
+
+  Retention  Target  Decumented Inherited
+
+- 利用反射获取注解信息
+
+- JDK8中注解的新特性
+
+  - 可重复注解
+
+    @Repeatable(MyAnnotation.class)
+
+  - 类型注解
 
 #### 11、Java集合
 
+##### 11.1 Java集合框架概述
 
+集合就像一种容器，动态地将多个对象的引用放入容器中。
+
+集合、数组都是对多个数据进行存储操作的结构，简称Java容器。
+
+数组：长度确定且存储元素的类型也确定 
+
+java集合分为Collection和Map两种体系
+
+- Collection接口
+
+  List:元素有序、可重复的集合
+
+  Set:元素无序、不可重复的集合
+
+  ![image-20220511151145849](C:\Typora\mylearning\img\image-20220511151145849.png)
+
+- Map接口 key-value对
+
+  ![image-20220511151213295](C:\Typora\mylearning\img\image-20220511151213295.png)
+
+##### 11.2 Collection接口方法
+
+##### 11.3 Iterator迭代器接口
+
+集合元素的遍历，使用迭代器Iterator接口
+
+内部的方法 hasNext()和next()
+
+```java
+Collection coll = new ArrayList();
+Iterator iterator = coll.iterator();
+while(iterator.hasNext()){
+    System.out.println(iterator.next());
+}
+```
+
+![image-20220511154712322](C:\Typora\mylearning\img\image-20220511154712322.png)
+
+使用foreach遍历集合元素
+
+##### 11.4 Collection子接口一：List
+
+- Arraylist、Linkedlist、Vector三者的异同？
+
+相同：三个类都是实现了List接口，存储数据的特点相同：存储有序的、可重复的数据。
+
+不同：
+
+Arraylist：作为List的主要实现类；线程不安全的，效率高；底层使用Object[] elementDate存储
+
+Linkedlist：对于频繁的插入、删除操作，使用此类效率比ArrayList高；底层使用双向链表存储
+
+Vector：list接口的古老实现类；线程安全的，效率低；底层使用Object[] elementDate存储
+
+list方法中要注意区分remove(int index)和remove(Object obj)
+
+- 源码分析
+
+  - ArrayList:
+
+    jdk7 ： ArrayList list = new ArrayList();
+
+    //底层创建了长度为10的Object[]数组elementDate
+
+    list.add(123);// elementDate[0] = new Integer(123);
+
+    如果添加的数据导致底层数据容量不够，则扩容至原来的1.5倍，同时将原有数组的数据复制到新数组。
+
+    建议使用带参的构造器。ArrayList list = new ArrayList(int capacity);
+
+    jdk8 : 第一次底层数组初始化为空{}，第一次add时才创建10长度的数组。
+
+  - Linkedlist
+
+    Linkedlistlist = new Linkedlist();内部声明了Node类型的first和last属性，默认值为null
+
+    list.add(123);将123封装到Node,创建了Node对象。
+
+  - Vector
+
+##### 11.5 Collection子接口二：Set
+
+无序性：存储的数据并非按照数组索引的顺序添加，而是根据哈希值。
+
+不可重复性：保证添加的元素按照equals()判断是，不能返回true。
+
+/-----HashSet:作为Set接口的主要实现类；线程不安全，可以存储null
+
+  	/----LinkedHashSet:作为HashSet的子类：遍历数据时，可以按照添加的顺序遍历。
+
+/----TreeSet:可以按照添加的对象指定属性进行排序，底层红黑树
+
+- 添加元素的过程：以HashSet为例
+
+向HashSet添加元素a，首先调用a所在类的hashCode()方法，计算元素a的哈希值，通过算法计算在HashSet底层数组中的存放位置，判断该位置是否已有元素。（成功1）
+
+如果有其他元素，则比较两元素的hash值，不同添加成功（成功2），相同需要调用a所在的equals()方法，true添加失败，false添加成功（成功3）。2和3链表方式存储。
+
+重写hashCode()和equals()尽可能保持一致性：相等的对象必须具有相同的散列码。
+
+- LinkedHashSet的使用
+
+LinkedHashSet作为HashSet的子类，再添加数据的同时，还维护了两个引用：前一个数据和后一个数据。
+
+LinkedHashSet对于频繁的遍历操作效率高。
+
+- TreeSet 
+
+TreeSet 中添加的数据，必须是相同的类对象
+
+两种排序方式：自然排序（comparable）和定制排序(comparator)
+
+自然排序：比较两个对象是否相同：comparTo()返回0，不再是equals();
+
+定制排序：比较两个对象是否相同：compare()返回0，不再是equals();
+
+##### 11.6 Map接口
+
+/------Map
+
+​		/----HashMap:作为Map的主要实现类；线程不安全效率高，存储null的key value
+
+​				/----LinkedHashMap:遍历时可以按照添加的顺序遍历；在原有HashMap基础上添加了一堆指针，指向前一个和后一个
+
+​		/----TreeMap：保证按照添加的key-value进行排序，实现排序遍历；key的自然排序和定制排序，底层红黑树
+
+​		/----HashTable：古老的实现类；线程安全，效率低
+
+​				/----Properties
+
+##### 11.7 Collections工具类
 
 #### 12、泛型
 
